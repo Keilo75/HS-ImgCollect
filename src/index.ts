@@ -25,7 +25,6 @@ const createWindow = (): void => {
 
   mainWindow.maximize();
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
-  mainWindow.webContents.openDevTools();
 };
 
 app.on('ready', createWindow);

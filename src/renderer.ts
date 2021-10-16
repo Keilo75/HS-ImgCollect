@@ -28,7 +28,9 @@ document.querySelector('.form').addEventListener('submit', async (e) => {
 
   const response: Image[] = await ipcRenderer.invoke('get-response', searchValue);
 
-  if (response.length > 0) images = response;
+  if (response.length === 0) return;
+  images = response;
+  index = 0;
   showImg();
 });
 
@@ -57,7 +59,9 @@ document.querySelector('.save-btn').addEventListener('click', async () => {
 
   // Download
   request.head(image.img, (err, res, body) => {
-    request(image.img).pipe(fs.createWriteStream(path.join(folderPath, `${currentSources.length}.png`)));
+    request(image.img)
+      .pipe(fs.createWriteStream(path.join(folderPath, `${currentSources.length}.png`)))
+      .on('finish', () => nextBtn.click());
   });
 });
 
@@ -89,6 +93,8 @@ function showImg() {
   document.querySelector('.result').classList.remove('hidden');
   const image = images[index];
   imgElement.src = image.img;
+
+  document.querySelector('.index').textContent = `${index + 1} / ${images.length}`;
 }
 
 function doesPathExist(path: string) {

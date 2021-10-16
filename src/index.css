@@ -59,11 +59,11 @@ body {
 }
 
 .result-btns button:first-child {
-  margin-right: 2.5px;
+  margin-right: 5px;
 }
 
 .result-btns button:last-child {
-  margin-left: 2.5px;
+  margin-left: 5px;
 }
 
 img {
