@@ -14,6 +14,7 @@ const folderInput = document.querySelector<HTMLInputElement>('.folder-input');
 const limitInput = document.querySelector<HTMLInputElement>('.limit-input');
 const nextBtn = document.querySelector<HTMLButtonElement>('.next-btn');
 const error = document.querySelector('.error');
+const submitBtn = document.querySelector<HTMLButtonElement>('.submit-btn');
 
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
@@ -38,7 +39,9 @@ document.querySelector('.form').addEventListener('submit', async (e) => {
   error.classList.add('hidden');
   folderPath = folderValue;
 
+  submitBtn.disabled = true;
   const response: IImage[] = await ipcRenderer.invoke('get-response', { searchTerm: searchValue, limit: limitValue });
+  submitBtn.disabled = false;
 
   if (response.length === 0) return;
   images = response;
@@ -64,11 +67,9 @@ document.querySelector('.save-btn').addEventListener('click', async () => {
   await setSources(sourcesPath, [...currentSources, image.url]);
 
   // Download
-  request.head(image.img, (err, res, body) => {
-    request(image.img)
-      .pipe(fs.createWriteStream(path.join(folderPath, `${currentSources.length}.png`)))
-      .on('finish', () => nextBtn.click());
-  });
+  const dataURL = canvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
+  const fileName = path.join(folderPath, `${currentSources.length}.png`);
+  fs.writeFile(fileName, dataURL, 'base64', (err) => console.log(err));
 });
 
 async function getCurrentSources(path: string): Promise<string[]> {
@@ -98,17 +99,21 @@ async function setSources(path: string, sources: string[]): Promise<void> {
 function showImg() {
   document.querySelector('.result').classList.remove('hidden');
   nextBtn.disabled = index === images.length - 1;
-  const image = new Image();
 
+  const image = new Image();
+  image.crossOrigin = 'anonymous';
   image.src = images[index].img;
+
   image.onload = () => {
     const maxWidth = document.querySelector('.canvas').getBoundingClientRect().width;
-    const isTooBig = image.width > maxWidth;
+    const aspectRatio = maxWidth / image.width;
 
-    const imageWidth = isTooBig ? maxWidth : image.width;
+    const imageWidth = image.width * aspectRatio;
+    const imageHeight = image.height * aspectRatio;
 
     canvas.width = imageWidth;
-    ctx.drawImage(image, 0, 0, imageWidth, 50);
+    canvas.height = imageHeight;
+    ctx.drawImage(image, 0, 0, imageWidth, imageHeight);
   };
 
   document.querySelector('.index').textContent = `${index + 1} / ${images.length}`;
