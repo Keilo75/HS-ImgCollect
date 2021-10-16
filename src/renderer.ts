@@ -15,6 +15,14 @@ const imgElement = document.querySelector('img');
 const nextBtn = document.querySelector<HTMLButtonElement>('.next-btn');
 const error = document.querySelector('.error');
 
+(async () => {
+  const isPackaged: boolean = await ipcRenderer.invoke('is-packaged');
+  if (!isPackaged) {
+    searchInput.value = 'usb stick';
+    folderInput.value = 'C:\\Users\\gesch\\Desktop\\Fotos\\Internet';
+  }
+})();
+
 document.querySelector('.form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const searchValue = searchInput.value;

@@ -23,6 +23,7 @@ const createWindow = (): void => {
     },
   });
 
+  if (!app.isPackaged) mainWindow.webContents.openDevTools();
   mainWindow.maximize();
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 };
@@ -43,12 +44,12 @@ app.on('activate', () => {
 
 ipcMain.handle('get-response', async (event, args: string) => {
   const browser = await pie.connect(app, puppeteer);
-  const window = new BrowserWindow();
-  window.maximize();
+  const pipWindow = new BrowserWindow();
+  pipWindow.maximize();
   const url = `https://www.google.de/search?q=${args}&tbm=isch`;
-  await window.loadURL(url);
+  await pipWindow.loadURL(url);
 
-  const page = await pie.getPage(browser, window);
+  const page = await pie.getPage(browser, pipWindow);
 
   const coords = {
     acceptCookies: {
@@ -65,48 +66,83 @@ ipcMain.handle('get-response', async (event, args: string) => {
   } catch {}
 
   const images: Image[] = await page.evaluate(() => {
-    const selectors = {
-      img: '.islrc',
-    };
+    const ms = Date.now();
+    function isRectEmpty(rect: DOMRect) {
+      return (
+        rect.top === 0 &&
+        rect.right === 0 &&
+        rect.bottom === 0 &&
+        rect.left === 0 &&
+        rect.width === 0 &&
+        rect.height === 0 &&
+        rect.x === 0 &&
+        rect.y === 0
+      );
+    }
 
-    const imgWrap = document.querySelector<HTMLDivElement>(selectors.img);
-    const imageElements = imgWrap.querySelectorAll('img');
-    console.log(imageElements);
+    function scrollToBottom(): Promise<void> {
+      return new Promise((resolve) => {
+        const endElement = document.querySelector('input[type=button]');
+        const interval = setInterval(() => {
+          window.scrollTo(0, 1000000);
+          const isVisible = !isRectEmpty(endElement.getBoundingClientRect());
+          if (isVisible) {
+            clearInterval(interval);
+            resolve();
+          }
+        }, 500);
+      });
+    }
 
-    const images = Array.from(imageElements).map((img) => {
-      const parent = img.parentElement.parentElement as HTMLElement;
-      const nextElement = parent.nextElementSibling as HTMLAnchorElement;
+    return scrollToBottom().then(() => {
+      console.log(Date.now() - ms);
 
-      if (parent.nodeName !== 'A') return undefined;
-      if (!parent) return undefined;
+      const selectors = {
+        img: '.islrc',
+      };
 
-      const link = parent as HTMLAnchorElement;
+      const imgWrap = document.querySelector<HTMLDivElement>(selectors.img);
+      const imageElements = imgWrap.querySelectorAll('img');
 
-      if (link.href.length > 0) {
-        const linkURL = new URL(link.href);
-        if (linkURL.host.startsWith('www.google')) return undefined;
-      }
+      const images = Array.from(imageElements).map((img) => {
+        const parent = img.parentElement.parentElement as HTMLElement;
+        const nextElement = parent.nextElementSibling as HTMLAnchorElement;
 
-      link.click();
+        if (parent.nodeName !== 'A') return undefined;
+        if (!parent) return undefined;
 
-      try {
-        const imgUrl = new URL(link.href);
-        const params = new URLSearchParams(imgUrl.search);
-        const urlParam = params.get('imgurl');
-        return { url: nextElement.getAttribute('href'), img: urlParam };
-      } catch {
-        return undefined;
-      }
+        const link = parent as HTMLAnchorElement;
+
+        if (link.href.length > 0) {
+          const linkURL = new URL(link.href);
+          if (linkURL.host.startsWith('www.google')) return undefined;
+        }
+
+        link.click();
+
+        try {
+          const imgUrl = new URL(link.href);
+          const params = new URLSearchParams(imgUrl.search);
+          const urlParam = params.get('imgurl');
+          return { url: nextElement.getAttribute('href'), img: urlParam };
+        } catch {
+          return undefined;
+        }
+      });
+
+      return images;
     });
-
-    return images;
   });
 
-  window.destroy();
+  pipWindow.destroy();
   return images.filter((img) => !!img);
 });
 
 ipcMain.handle('open-dialog', async (event, args) => {
   const response = await dialog.showOpenDialog({ properties: ['openDirectory'] });
   return response;
+});
+
+ipcMain.handle('is-packaged', (event, args) => {
+  return app.isPackaged;
 });
