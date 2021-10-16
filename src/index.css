@@ -1,6 +1,75 @@
+:root {
+  --container-width: 50%;
+}
+
 body {
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  margin: auto;
-  max-width: 38rem;
-  padding: 2rem;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  width: var(--container-width);
+  padding: 20px;
+}
+
+.form {
+  width: 100%;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  width: 100%;
+}
+
+.submit-btn {
+  margin-top: 10px;
+}
+
+.folder-input-wrap {
+  display: flex;
+}
+
+.choose-folder-btn {
+  width: 170px;
+  margin-left: 10px;
+}
+
+.error {
+  color: red;
+}
+
+.result {
+  padding: 10px;
+}
+
+.result-btns {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.result-btns button {
+  flex-grow: 1;
+}
+
+.result-btns button:first-child {
+  margin-right: 2.5px;
+}
+
+.result-btns button:last-child {
+  margin-left: 2.5px;
+}
+
+img {
+  width: 100%;
+}
+
+.hidden {
+  visibility: hidden;
 }

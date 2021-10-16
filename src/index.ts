@@ -1,6 +1,7 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import pie from 'puppeteer-in-electron';
 import puppeteer from 'puppeteer-core';
+import { Image } from './types';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
 
@@ -22,6 +23,7 @@ const createWindow = (): void => {
     },
   });
 
+  mainWindow.maximize();
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
   mainWindow.webContents.openDevTools();
 };
@@ -44,7 +46,7 @@ ipcMain.handle('get-response', async (event, args: string) => {
   const browser = await pie.connect(app, puppeteer);
   const window = new BrowserWindow();
   window.maximize();
-  const url = 'https://google.com';
+  const url = `https://www.google.de/search?q=${args}&tbm=isch`;
   await window.loadURL(url);
 
   const page = await pie.getPage(browser, window);
@@ -63,10 +65,49 @@ ipcMain.handle('get-response', async (event, args: string) => {
     }
   } catch {}
 
-  const searchInput = await page.waitForSelector('[aria-label="Suche"]');
-  searchInput.focus();
-  await page.keyboard.type(args, { delay: 50 });
-  await page.keyboard.press('Enter');
+  const images: Image[] = await page.evaluate(() => {
+    const selectors = {
+      img: '.islrc',
+    };
 
-  return '';
+    const imgWrap = document.querySelector<HTMLDivElement>(selectors.img);
+    const imageElements = imgWrap.querySelectorAll('img');
+    console.log(imageElements);
+
+    const images = Array.from(imageElements).map((img) => {
+      const parent = img.parentElement.parentElement as HTMLElement;
+      const nextElement = parent.nextElementSibling as HTMLAnchorElement;
+
+      if (parent.nodeName !== 'A') return undefined;
+      if (!parent) return undefined;
+
+      const link = parent as HTMLAnchorElement;
+
+      if (link.href.length > 0) {
+        const linkURL = new URL(link.href);
+        if (linkURL.host.startsWith('www.google')) return undefined;
+      }
+
+      link.click();
+
+      try {
+        const imgUrl = new URL(link.href);
+        const params = new URLSearchParams(imgUrl.search);
+        const urlParam = params.get('imgurl');
+        return { url: nextElement.getAttribute('href'), img: urlParam };
+      } catch {
+        return undefined;
+      }
+    });
+
+    return images;
+  });
+
+  window.destroy();
+  return images.filter((img) => !!img);
+});
+
+ipcMain.handle('open-dialog', async (event, args) => {
+  const response = await dialog.showOpenDialog({ properties: ['openDirectory'] });
+  return response;
 });

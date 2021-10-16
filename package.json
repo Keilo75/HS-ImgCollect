@@ -24,7 +24,7 @@
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
-            "name": "imgcollect"
+            "name": "ImgCollect"
           }
         },
         {
@@ -70,6 +70,7 @@
     "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
     "@electron-forge/maker-zip": "^6.0.0-beta.54",
     "@electron-forge/plugin-webpack": "6.0.0-beta.54",
+    "@types/request": "^2.48.7",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.1",
     "@vercel/webpack-asset-relocator-loader": "^1.7.0",
@@ -86,6 +87,7 @@
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
     "puppeteer-core": "^10.4.0",
-    "puppeteer-in-electron": "^3.0.5"
+    "puppeteer-in-electron": "^3.0.5",
+    "request": "^2.88.2"
   }
 }
