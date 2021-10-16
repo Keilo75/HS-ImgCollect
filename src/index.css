@@ -66,8 +66,15 @@ body {
   margin-left: 5px;
 }
 
-img {
+.index-wrap {
   width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.canvas {
+  width: 100%;
+  background-color: red;
 }
 
 .hidden {

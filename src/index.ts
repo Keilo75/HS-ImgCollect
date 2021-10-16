@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import pie from 'puppeteer-in-electron';
 import puppeteer from 'puppeteer-core';
-import { Image } from './types';
+import { CrawlOptions, Image } from './types';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
 
@@ -42,12 +42,13 @@ app.on('activate', () => {
   }
 });
 
-ipcMain.handle('get-response', async (event, args: string) => {
+ipcMain.handle('get-response', async (event, args: CrawlOptions) => {
   const browser = await pie.connect(app, puppeteer);
   const pipWindow = new BrowserWindow();
   pipWindow.maximize();
-  const url = `https://www.google.de/search?q=${args}&tbm=isch`;
+  const url = `https://www.google.de/search?q=${args.searchTerm}&tbm=isch`;
   await pipWindow.loadURL(url);
+  pipWindow.webContents.openDevTools();
 
   const page = await pie.getPage(browser, pipWindow);
 
@@ -65,7 +66,7 @@ ipcMain.handle('get-response', async (event, args: string) => {
     }
   } catch {}
 
-  const images: Image[] = await page.evaluate(() => {
+  const images: Image[] = await page.evaluate((limit: number) => {
     const ms = Date.now();
     function isRectEmpty(rect: DOMRect) {
       return (
@@ -90,7 +91,7 @@ ipcMain.handle('get-response', async (event, args: string) => {
             clearInterval(interval);
             resolve();
           }
-        }, 500);
+        }, 100);
       });
     }
 
@@ -102,9 +103,10 @@ ipcMain.handle('get-response', async (event, args: string) => {
       };
 
       const imgWrap = document.querySelector<HTMLDivElement>(selectors.img);
-      const imageElements = imgWrap.querySelectorAll('img');
+      let imageArray = Array.from(imgWrap.querySelectorAll('img'));
+      if (limit > 0) imageArray = imageArray.slice(0, limit);
 
-      const images = Array.from(imageElements).map((img) => {
+      const images = imageArray.map((img) => {
         const parent = img.parentElement.parentElement as HTMLElement;
         const nextElement = parent.nextElementSibling as HTMLAnchorElement;
 
@@ -132,7 +134,7 @@ ipcMain.handle('get-response', async (event, args: string) => {
 
       return images;
     });
-  });
+  }, args.limit);
 
   pipWindow.destroy();
   return images.filter((img) => !!img);
