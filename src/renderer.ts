@@ -2,12 +2,14 @@ import { ipcRenderer } from 'electron';
 import fs from 'fs';
 import './index.css';
 import path from 'path';
-import request from 'request';
 import { Image as IImage } from './types';
 
 let images: IImage[];
 let index = 0;
 let folderPath: string;
+
+const canvas = document.querySelector('canvas');
+const ctx = canvas.getContext('2d');
 
 const searchInput = document.querySelector<HTMLInputElement>('.search-input');
 const folderInput = document.querySelector<HTMLInputElement>('.folder-input');
@@ -16,8 +18,50 @@ const nextBtn = document.querySelector<HTMLButtonElement>('.next-btn');
 const error = document.querySelector('.error');
 const submitBtn = document.querySelector<HTMLButtonElement>('.submit-btn');
 
-const canvas = document.querySelector('canvas');
-const ctx = canvas.getContext('2d');
+const sizeInput = document.querySelector<HTMLInputElement>('.size-input');
+const sizeLabel = document.querySelector('.size-label');
+sizeInput.value = '1';
+sizeInput.addEventListener('input', (e) => {
+  const value = (e.target as HTMLInputElement).value;
+  sizeLabel.textContent = `Pen Size: ${value}px`;
+  ctx.lineWidth = parseInt(value);
+});
+
+interface Coordinates {
+  x: number;
+  y: number;
+}
+const getMouseCoordinates = (e: MouseEvent): Coordinates => {
+  const { x, y } = canvas.getBoundingClientRect();
+  const mouseX = e.clientX - x;
+  const mouseY = e.clientY - y;
+  return {
+    x: mouseX,
+    y: mouseY,
+  };
+};
+
+let isDrawing = false;
+canvas.addEventListener('mousedown', (e) => {
+  ctx.strokeStyle = 'white';
+  isDrawing = true;
+  const { x, y } = getMouseCoordinates(e);
+  ctx.moveTo(x, y);
+  ctx.beginPath();
+});
+
+canvas.addEventListener('mouseup', () => {
+  isDrawing = false;
+  ctx.closePath();
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  if (!isDrawing) return;
+
+  const { x, y } = getMouseCoordinates(e);
+  ctx.lineTo(x, y);
+  ctx.stroke();
+});
 
 (async () => {
   const isPackaged: boolean = await ipcRenderer.invoke('is-packaged');
@@ -69,7 +113,10 @@ document.querySelector('.save-btn').addEventListener('click', async () => {
   // Download
   const dataURL = canvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
   const fileName = path.join(folderPath, `${currentSources.length}.png`);
-  fs.writeFile(fileName, dataURL, 'base64', (err) => console.log(err));
+  fs.writeFile(fileName, dataURL, 'base64', (err) => {
+    if (err) console.error(err);
+    nextBtn.click();
+  });
 });
 
 async function getCurrentSources(path: string): Promise<string[]> {
