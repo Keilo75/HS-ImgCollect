@@ -6,4 +6,5 @@ export interface Image {
 export interface CrawlOptions {
   searchTerm: string;
   limit?: number;
+  offset?: number;
 }

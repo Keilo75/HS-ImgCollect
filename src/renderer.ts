@@ -14,15 +14,16 @@ const ctx = canvas.getContext('2d');
 const searchInput = document.querySelector<HTMLInputElement>('.search-input');
 const folderInput = document.querySelector<HTMLInputElement>('.folder-input');
 const limitInput = document.querySelector<HTMLInputElement>('.limit-input');
+const offsetInput = document.querySelector<HTMLInputElement>('.offset-input');
 const nextBtn = document.querySelector<HTMLButtonElement>('.next-btn');
 const error = document.querySelector('.error');
 const submitBtn = document.querySelector<HTMLButtonElement>('.submit-btn');
 
 const sizeInput = document.querySelector<HTMLInputElement>('.size-input');
 const sizeLabel = document.querySelector('.size-label');
-sizeInput.value = '1';
+sizeInput.value = sizeInput.value;
 sizeInput.addEventListener('input', (e) => {
-  const value = (e.target as HTMLInputElement).value;
+  const value = sizeInput.value;
   sizeLabel.textContent = `Pen Size: ${value}px`;
   ctx.lineWidth = parseInt(value);
 });
@@ -76,6 +77,7 @@ document.querySelector('.form').addEventListener('submit', async (e) => {
   const searchValue = searchInput.value;
   const folderValue = folderInput.value;
   const limitValue = parseInt(limitInput.value);
+  const offsetValue = parseInt(offsetInput.value);
 
   const isValidPath = await doesPathExist(folderValue);
   if (!isValidPath) return error.classList.remove('hidden');
@@ -84,12 +86,21 @@ document.querySelector('.form').addEventListener('submit', async (e) => {
   folderPath = folderValue;
 
   submitBtn.disabled = true;
-  const response: IImage[] = await ipcRenderer.invoke('get-response', { searchTerm: searchValue, limit: limitValue });
+  const response: IImage[] = await ipcRenderer.invoke('get-response', {
+    searchTerm: searchValue,
+    limit: limitValue,
+    offset: offsetValue,
+  });
   submitBtn.disabled = false;
 
   if (response.length === 0) return;
   images = response;
   index = 0;
+  (document.querySelector('.form-button') as HTMLButtonElement).click();
+  showImg();
+});
+
+document.querySelector('.reset-btn').addEventListener('click', () => {
   showImg();
 });
 
@@ -160,6 +171,7 @@ function showImg() {
 
     canvas.width = imageWidth;
     canvas.height = imageHeight;
+    ctx.lineWidth = parseInt(sizeInput.value);
     ctx.drawImage(image, 0, 0, imageWidth, imageHeight);
   };
 

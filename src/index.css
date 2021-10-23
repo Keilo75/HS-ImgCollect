@@ -80,3 +80,16 @@ body {
 .hidden {
   visibility: hidden;
 }
+
+.drawing-settings {
+  position: relative;
+}
+
+.size-label {
+  margin-top: 10px;
+}
+
+.reset-btn {
+  position: absolute;
+  right: 0;
+}
