@@ -19,6 +19,8 @@ const nextBtn = document.querySelector<HTMLButtonElement>('.next-btn');
 const error = document.querySelector('.error');
 const submitBtn = document.querySelector<HTMLButtonElement>('.submit-btn');
 
+const googleRadio = document.querySelector<HTMLInputElement>('#engineRadio1');
+
 const sizeInput = document.querySelector<HTMLInputElement>('.size-input');
 const sizeLabel = document.querySelector('.size-label');
 sizeInput.value = sizeInput.value;
@@ -51,7 +53,8 @@ canvas.addEventListener('mousedown', (e) => {
   ctx.beginPath();
 });
 
-canvas.addEventListener('mouseup', () => {
+document.addEventListener('mouseup', () => {
+  if (!isDrawing) return;
   isDrawing = false;
   ctx.closePath();
 });
@@ -69,6 +72,7 @@ canvas.addEventListener('mousemove', (e) => {
   if (!isPackaged) {
     searchInput.value = 'usb stick';
     folderInput.value = 'C:\\Users\\gesch\\Desktop\\Fotos\\Internet';
+    document.querySelector<HTMLInputElement>('#engineRadio2').click();
   }
 })();
 
@@ -78,6 +82,7 @@ document.querySelector('.form').addEventListener('submit', async (e) => {
   const folderValue = folderInput.value;
   const limitValue = parseInt(limitInput.value);
   const offsetValue = parseInt(offsetInput.value);
+  const searchEngine = googleRadio.checked ? 'google' : 'bing';
 
   const isValidPath = await doesPathExist(folderValue);
   if (!isValidPath) return error.classList.remove('hidden');
@@ -90,6 +95,7 @@ document.querySelector('.form').addEventListener('submit', async (e) => {
     searchTerm: searchValue,
     limit: limitValue,
     offset: offsetValue,
+    engine: searchEngine,
   });
   submitBtn.disabled = false;
 
