@@ -145,16 +145,60 @@ ipcMain.handle('get-response', async (event, args: CrawlOptions) => {
     pipWindow.destroy();
     return images.filter((img) => !!img);
   } else if (args.engine === 'bing') {
-    const url = `https://www.bing.com/images/search?q=${args.searchTerm}`;
-    await pipWindow.loadURL(url);
+    const url = `https://www.bing.com/images/search?q=${args.searchTerm}&form=HDRSC2&first=1&tsc=ImageBasicHover`;
+    await pipWindow.loadURL(url).catch(() => {});
     pipWindow.webContents.openDevTools();
 
     const page = await pie.getPage(browser, pipWindow);
-    const images: Image[] = [];
 
-    return [];
+    await sleep(3000);
+    try {
+      await page.waitForSelector('[aria-modal=true]');
+      page.keyboard.press('Enter');
+    } catch {}
+
+    const images: Image[] = await page.evaluate(
+      (args) => {
+        function sleep(ms: number) {
+          return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        const ms = Date.now();
+
+        const interval = setInterval(() => {
+          window.scrollTo(0, 1000000);
+        }, 500);
+
+        return sleep(2000).then(() => {
+          clearInterval(interval);
+          console.log(Date.now() - ms);
+
+          let imageElements = Array.from(document.querySelectorAll('.mimg'));
+
+          if (args.offset > 0) imageElements.splice(0, args.offset);
+          if (args.limit > 0) imageElements = imageElements.slice(0, args.limit);
+
+          const images = imageElements.map((elem) => {
+            const parent = elem.parentElement.parentElement;
+
+            const data = JSON.parse(parent.getAttribute('m'));
+            return { url: data.purl, img: data.murl };
+          });
+
+          return images;
+        });
+      },
+      { offset: args.offset, limit: args.limit }
+    );
+
+    pipWindow.destroy();
+    return images.filter((img) => !!img);
   }
 });
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 ipcMain.handle('open-dialog', async (event, args) => {
   const response = await dialog.showOpenDialog({ properties: ['openDirectory'] });
