@@ -23,49 +23,45 @@ const googleRadio = document.querySelector<HTMLInputElement>('#engineRadio1');
 
 const sizeInput = document.querySelector<HTMLInputElement>('.size-input');
 const sizeLabel = document.querySelector('.size-label');
-sizeInput.value = sizeInput.value;
 sizeInput.addEventListener('input', () => {
-  const value = sizeInput.value;
-  sizeLabel.textContent = `Pen Size: ${value}px`;
-  ctx.lineWidth = parseInt(value);
+  sizeLabel.textContent = `Pen Size: ${sizeInput.value}px`;
 });
-
-interface Coordinates {
-  x: number;
-  y: number;
-}
-const getMouseCoordinates = (e: MouseEvent): Coordinates => {
-  const { x, y } = canvas.getBoundingClientRect();
-  const mouseX = e.clientX - x;
-  const mouseY = e.clientY - y;
-  return {
-    x: mouseX,
-    y: mouseY,
-  };
-};
 
 let isDrawing = false;
+let x = 0;
+let y = 0;
 canvas.addEventListener('mousedown', (e) => {
-  ctx.strokeStyle = 'white';
   isDrawing = true;
-  const { x, y } = getMouseCoordinates(e);
-  ctx.moveTo(x, y);
+  x = e.offsetX;
+  y = e.offsetY;
+});
+
+document.addEventListener('mousemove', (e) => {
+  mouseEvent(e);
+});
+
+document.addEventListener('mouseup', (e) => {
+  mouseEvent(e, true);
+});
+
+const mouseEvent = (e: MouseEvent, stop?: true) => {
+  if (isDrawing) {
+    drawLine(x, y, e.offsetX, e.offsetY);
+    x = e.offsetX;
+    y = e.offsetY;
+    if (stop) isDrawing = false;
+  }
+};
+
+const drawLine = (x1: number, y1: number, x2: number, y2: number) => {
   ctx.beginPath();
-});
-
-document.addEventListener('mouseup', () => {
-  if (!isDrawing) return;
-  isDrawing = false;
-  ctx.closePath();
-});
-
-canvas.addEventListener('mousemove', (e) => {
-  if (!isDrawing) return;
-
-  const { x, y } = getMouseCoordinates(e);
-  ctx.lineTo(x, y);
+  ctx.lineWidth = parseInt(sizeInput.value);
+  ctx.strokeStyle = 'white';
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
   ctx.stroke();
-});
+  ctx.closePath();
+};
 
 (async () => {
   const isPackaged: boolean = await ipcRenderer.invoke('is-packaged');
