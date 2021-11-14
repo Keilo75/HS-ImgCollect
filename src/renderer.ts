@@ -21,6 +21,7 @@ const error = document.querySelector('.error');
 const submitBtn = document.querySelector<HTMLButtonElement>('.submit-btn');
 
 const googleRadio = document.querySelector<HTMLInputElement>('#engineRadio1');
+const uuidRadio = document.querySelector<HTMLInputElement>('#nameRadio1');
 
 const sizeInput = document.querySelector<HTMLInputElement>('.size-input');
 const sizeLabel = document.querySelector('.size-label');
@@ -126,7 +127,7 @@ document.querySelector('.save-btn').addEventListener('click', async () => {
 
   // Download
   const dataURL = canvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
-  const fileName = path.join(folderPath, `${uuid()}.png`);
+  const fileName = path.join(folderPath, `${uuidRadio.checked ? uuid() : currentSources.length}.png`);
   fs.writeFile(fileName, dataURL, 'base64', (err) => {
     if (err) console.error(err);
     nextBtn.click();
