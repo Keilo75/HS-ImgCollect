@@ -33,44 +33,35 @@ let isDrawing = false;
 let x = 0;
 let y = 0;
 canvas.addEventListener('mousedown', (e) => {
+  ctx.strokeStyle = 'white';
   isDrawing = true;
   x = e.offsetX;
   y = e.offsetY;
+  ctx.moveTo(x, y);
+  ctx.beginPath();
 });
 
 document.addEventListener('mousemove', (e) => {
-  mouseEvent(e);
+  if (!isDrawing) return;
+
+  x = e.offsetX;
+  y = e.offsetY;
+
+  ctx.lineTo(x, y);
+  ctx.stroke();
 });
 
 document.addEventListener('mouseup', (e) => {
-  mouseEvent(e, true);
-});
-
-const mouseEvent = (e: MouseEvent, stop?: true) => {
-  if (isDrawing) {
-    drawLine(x, y, e.offsetX, e.offsetY);
-    x = e.offsetX;
-    y = e.offsetY;
-    if (stop) isDrawing = false;
-  }
-};
-
-const drawLine = (x1: number, y1: number, x2: number, y2: number) => {
-  ctx.beginPath();
-  ctx.lineWidth = parseInt(sizeInput.value);
-  ctx.strokeStyle = 'white';
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.stroke();
+  if (!isDrawing) return;
+  isDrawing = false;
   ctx.closePath();
-};
+});
 
 (async () => {
   const isPackaged: boolean = await ipcRenderer.invoke('is-packaged');
   if (!isPackaged) {
     searchInput.value = 'usb stick';
     folderInput.value = 'C:\\Users\\gesch\\Desktop\\Fotos\\Internet';
-    document.querySelector<HTMLInputElement>('#engineRadio2').click();
   }
 })();
 
