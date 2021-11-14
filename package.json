@@ -87,6 +87,7 @@
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
     "puppeteer-core": "^10.4.0",
-    "puppeteer-in-electron": "^3.0.5"
+    "puppeteer-in-electron": "^3.0.5",
+    "uuid": "^8.3.2"
   }
 }

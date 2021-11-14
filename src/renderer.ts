@@ -3,6 +3,7 @@ import fs from 'fs';
 import './index.css';
 import path from 'path';
 import { Image as IImage } from './types';
+import { v4 as uuid } from 'uuid';
 
 let images: IImage[];
 let index = 0;
@@ -125,7 +126,7 @@ document.querySelector('.save-btn').addEventListener('click', async () => {
 
   // Download
   const dataURL = canvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
-  const fileName = path.join(folderPath, `${currentSources.length}.png`);
+  const fileName = path.join(folderPath, `${uuid()}.png`);
   fs.writeFile(fileName, dataURL, 'base64', (err) => {
     if (err) console.error(err);
     nextBtn.click();
