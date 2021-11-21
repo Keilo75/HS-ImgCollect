@@ -19,6 +19,7 @@ const folderInput = document.querySelector<HTMLInputElement>('.folder-input');
 const limitInput = document.querySelector<HTMLInputElement>('.limit-input');
 const offsetInput = document.querySelector<HTMLInputElement>('.offset-input');
 const nextBtn = document.querySelector<HTMLButtonElement>('.next-btn');
+const saveBtn = document.querySelector<HTMLButtonElement>('.save-btn');
 const error = document.querySelector('.error');
 const submitBtn = document.querySelector<HTMLButtonElement>('.submit-btn');
 
@@ -129,15 +130,15 @@ document.addEventListener('mouseup', (e) => {
     folderInput.value = 'C:\\Users\\gesch\\Desktop\\Fotos\\Internet';
     folderPath = folderInput.value;
 
-    images = [
-      {
-        img: 'https://www.bechtle.com/shop/medias/5c94e7f74c2f8519d6ea345a-900Wx900H-820Wx820H?context=bWFzdGVyfHJvb3R8MzUwNjd8aW1hZ2UvanBlZ3xoZGEvaDEzLzEwNjMxNzkzNDQyODQ2LmpwZ3wzNjM1YzY3NmVjMWE2MjdhMDA3NDg3YWYzMDI1YTRmMGQ5NDkyYWUxMjc3MjAyOWZmYTEzZDRjOTViZmM1YTMy',
-        url: 'https://www.bechtle.com/shop/articona-onos-256-gb-usb-stick--925705--p',
-      },
-    ];
-    index = 0;
-    (document.querySelector('.form-button') as HTMLButtonElement).click();
-    showImg();
+    // images = [
+    //   {
+    //     img: 'https://www.bechtle.com/shop/medias/5c94e7f74c2f8519d6ea345a-900Wx900H-820Wx820H?context=bWFzdGVyfHJvb3R8MzUwNjd8aW1hZ2UvanBlZ3xoZGEvaDEzLzEwNjMxNzkzNDQyODQ2LmpwZ3wzNjM1YzY3NmVjMWE2MjdhMDA3NDg3YWYzMDI1YTRmMGQ5NDkyYWUxMjc3MjAyOWZmYTEzZDRjOTViZmM1YTMy',
+    //     url: 'https://www.bechtle.com/shop/articona-onos-256-gb-usb-stick--925705--p',
+    //   },
+    // ];
+    // index = 0;
+    // (document.querySelector('.form-button') as HTMLButtonElement).click();
+    // showImg();
   }
 })();
 
@@ -185,7 +186,7 @@ nextBtn.addEventListener('click', () => {
   showImg();
 });
 
-document.querySelector('.save-btn').addEventListener('click', async () => {
+saveBtn.addEventListener('click', async () => {
   const image = images[index];
 
   const sourcesPath = path.join(folderPath, 'sources.txt');
@@ -239,11 +240,17 @@ async function setSources(path: string, sources: string[]): Promise<void> {
 
 function showImg() {
   document.querySelector('.result').classList.remove('hidden');
-  nextBtn.disabled = index === images.length - 1;
+  nextBtn.disabled = true;
+  saveBtn.disabled = true;
 
   const image = new Image();
   image.crossOrigin = 'anonymous';
   image.src = images[index].img;
+
+  image.onerror = () => {
+    index++;
+    showImg();
+  };
 
   image.onload = () => {
     const maxWidth = document.querySelector('.canvas').getBoundingClientRect().width;
@@ -261,6 +268,9 @@ function showImg() {
     ctx.drawImage(image, 0, 0, imageWidth, imageHeight);
     cropCtx.clearRect(0, 0, imageWidth, imageHeight);
     croppedPosition = { x: 0, y: 0, width: 0, height: 0 };
+
+    saveBtn.disabled = false;
+    nextBtn.disabled = index === images.length - 1;
   };
 
   document.querySelector('.index').textContent = `${index + 1} / ${images.length}`;
