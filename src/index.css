@@ -51,7 +51,6 @@ body {
 
 .result-btns {
   display: flex;
-  margin-bottom: 20px;
 }
 
 .result-btns button {
@@ -75,10 +74,41 @@ body {
 .canvas {
   box-sizing: border-box;
   width: 100%;
+  position: relative;
+}
+
+.canvas canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.canvas #cropCanvas {
+  pointer-events: none;
 }
 
 .hidden {
   visibility: hidden;
+}
+
+.tool-settings {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.tool-settings > div {
+  flex-grow: 1;
+}
+
+.tool-settings > div > label {
+  width: 100%;
+}
+
+.tool-settings > div:first-child {
+  margin-right: 5px;
+}
+
+.tool-settings > div:last-child {
+  margin-left: 5px;
 }
 
 .drawing-settings {
