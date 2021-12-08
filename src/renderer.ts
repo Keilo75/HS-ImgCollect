@@ -186,7 +186,7 @@ nextBtn.addEventListener('click', () => {
   showImg();
 });
 
-saveBtn.addEventListener('click', async () => {
+saveBtn.addEventListener('click', async (e) => {
   const image = images[index];
 
   const sourcesPath = path.join(folderPath, 'sources.txt');
@@ -202,7 +202,7 @@ saveBtn.addEventListener('click', async () => {
   const fileName = path.join(folderPath, `${uuidRadio.checked ? uuid() : currentSources.length}.png`);
   fs.writeFile(fileName, dataURL, 'base64', (err) => {
     if (err) console.error(err);
-    nextBtn.click();
+    if (!e.shiftKey) showImg();
   });
 });
 
