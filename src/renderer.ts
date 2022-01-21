@@ -202,7 +202,11 @@ saveBtn.addEventListener('click', async (e) => {
   const fileName = path.join(folderPath, `${uuidRadio.checked ? uuid() : currentSources.length}.png`);
   fs.writeFile(fileName, dataURL, 'base64', (err) => {
     if (err) console.error(err);
-    if (!e.shiftKey) showImg();
+    if (e.shiftKey) {
+      showImg();
+    } else {
+      nextBtn.click();
+    }
   });
 });
 
