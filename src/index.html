@@ -25,7 +25,11 @@
               Search
             </button>
           </h2>
-          <div id="formCollapse" class="accordion-collapse collapse show" data-bs-parent="#formAccordion">
+          <div
+            id="formCollapse"
+            class="accordion-collapse collapse show"
+            data-bs-parent="#formAccordion"
+          >
             <div class="accordion-body">
               <form class="form">
                 <div class="form-group">
@@ -36,7 +40,12 @@
                   <label>Folder</label>
                   <div class="folder-input-wrap">
                     <input class="form-control folder-input" required />
-                    <button class="btn btn-primary choose-folder-btn" type="button">Choose Folder</button>
+                    <button
+                      class="btn btn-primary choose-folder-btn"
+                      type="button"
+                    >
+                      Choose Folder
+                    </button>
                   </div>
                   <small class="error hidden">Invalid Path.</small>
                 </div>
@@ -52,43 +61,88 @@
                         Extra Options
                       </button>
                     </h2>
-                    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#extraAccordion">
+                    <div
+                      id="collapseOne"
+                      class="accordion-collapse collapse"
+                      data-bs-parent="#extraAccordion"
+                    >
                       <div class="accordion-body">
                         <div class="form-group">
                           <label>Limit</label>
-                          <input class="form-control limit-input" type="number" min="0" />
+                          <input
+                            class="form-control limit-input"
+                            type="number"
+                            min="0"
+                          />
                         </div>
                         <div class="form-group">
                           <label>Offset</label>
-                          <input class="form-control offset-input" type="number" max="500" min="0" />
+                          <input
+                            class="form-control offset-input"
+                            type="number"
+                            max="500"
+                            min="0"
+                          />
                         </div>
                         <label>Search Engine:</label>
                         <div class="form-group">
                           <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="engineRadio" id="engineRadio1" checked />
-                            <label class="form-check-label" for="engineRadio1"> Google </label>
+                            <input
+                              class="form-check-input"
+                              type="radio"
+                              name="engineRadio"
+                              id="engineRadio1"
+                              checked
+                            />
+                            <label class="form-check-label" for="engineRadio1">
+                              Google
+                            </label>
                           </div>
                           <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="engineRadio" id="engineRadio2" />
-                            <label class="form-check-label" for="engineRadio2"> Bing </label>
+                            <input
+                              class="form-check-input"
+                              type="radio"
+                              name="engineRadio"
+                              id="engineRadio2"
+                            />
+                            <label class="form-check-label" for="engineRadio2">
+                              Bing
+                            </label>
                           </div>
                         </div>
                         <label>Naming Style:</label>
                         <div class="form-group">
                           <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="nameRadio" id="nameRadio1" checked />
-                            <label class="form-check-label" for="nameRadio1"> UUID </label>
+                            <input
+                              class="form-check-input"
+                              type="radio"
+                              name="nameRadio"
+                              id="nameRadio1"
+                              checked
+                            />
+                            <label class="form-check-label" for="nameRadio1">
+                              UUID
+                            </label>
                           </div>
                           <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="nameRadio" id="nameRadio2" />
-                            <label class="form-check-label" for="nameRadio2"> Index </label>
+                            <input
+                              class="form-check-input"
+                              type="radio"
+                              name="nameRadio"
+                              id="nameRadio2"
+                            />
+                            <label class="form-check-label" for="nameRadio2">
+                              Index
+                            </label>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <button class="btn btn-primary submit-btn" type="submit">Search</button>
+                <button class="btn btn-primary submit-btn" type="submit">
+                  Search
+                </button>
               </form>
             </div>
           </div>
@@ -96,6 +150,7 @@
       </div>
       <div class="result hidden">
         <div class="result-btns">
+          <button class="btn btn-secondary previous-btn">Previous</button>
           <button class="btn btn-success save-btn">Save</button>
           <button class="btn btn-primary next-btn">Next</button>
         </div>
@@ -106,18 +161,37 @@
         <div class="form-group drawing-settings">
           <div class="tool-settings">
             <div>
-              <input type="radio" class="btn-check" autocomplete="off" checked name="tool" id="tool1" />
+              <input
+                type="radio"
+                class="btn-check"
+                autocomplete="off"
+                checked
+                name="tool"
+                id="tool1"
+              />
               <label class="btn btn-outline-primary" for="tool1">Pen</label>
             </div>
             <div>
-              <input type="radio" class="btn-check" autocomplete="off" name="tool" id="tool2" />
+              <input
+                type="radio"
+                class="btn-check"
+                autocomplete="off"
+                name="tool"
+                id="tool2"
+              />
               <label class="btn btn-outline-primary" for="tool2">Crop</label>
             </div>
           </div>
 
           <label class="size-label">Pen Size: 50px</label>
           <button class="btn btn-primary reset-btn">Reset Drawing</button>
-          <input type="range" class="form-range size-input" min="1" max="100" step="1" />
+          <input
+            type="range"
+            class="form-range size-input"
+            min="1"
+            max="100"
+            step="1"
+          />
         </div>
         <div class="canvas">
           <canvas id="canvas"></canvas>

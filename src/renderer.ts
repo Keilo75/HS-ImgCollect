@@ -18,6 +18,7 @@ const searchInput = document.querySelector<HTMLInputElement>('.search-input');
 const folderInput = document.querySelector<HTMLInputElement>('.folder-input');
 const limitInput = document.querySelector<HTMLInputElement>('.limit-input');
 const offsetInput = document.querySelector<HTMLInputElement>('.offset-input');
+const previousBtn = document.querySelector<HTMLButtonElement>('.previous-btn');
 const nextBtn = document.querySelector<HTMLButtonElement>('.next-btn');
 const saveBtn = document.querySelector<HTMLButtonElement>('.save-btn');
 const error = document.querySelector('.error');
@@ -176,9 +177,19 @@ document.querySelector('.reset-btn').addEventListener('click', () => {
   showImg();
 });
 
-document.querySelector('.choose-folder-btn').addEventListener('click', async () => {
-  const response: Electron.OpenDialogReturnValue = await ipcRenderer.invoke('open-dialog');
-  if (!response.canceled) folderInput.value = response.filePaths[0];
+document
+  .querySelector('.choose-folder-btn')
+  .addEventListener('click', async () => {
+    const response: Electron.OpenDialogReturnValue = await ipcRenderer.invoke(
+      'open-dialog'
+    );
+    if (!response.canceled) folderInput.value = response.filePaths[0];
+  });
+
+previousBtn.addEventListener('click', () => {
+  if (index === 0) return;
+  index--;
+  showImg();
 });
 
 nextBtn.addEventListener('click', () => {
@@ -191,15 +202,22 @@ saveBtn.addEventListener('click', async (e) => {
 
   const sourcesPath = path.join(folderPath, 'sources.txt');
 
-  const currentSources = (await getCurrentSources(sourcesPath)).filter((src) => src.length > 0);
+  const currentSources = (await getCurrentSources(sourcesPath)).filter(
+    (src) => src.length > 0
+  );
   await setSources(sourcesPath, [...currentSources, image.url]);
 
   // Download
   const isCropped = croppedPosition.width !== 0 && croppedPosition.height !== 0;
   const croppedCanvas = isCropped ? crop(canvas, croppedPosition) : canvas;
 
-  const dataURL = croppedCanvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
-  const fileName = path.join(folderPath, `${uuidRadio.checked ? uuid() : currentSources.length}.png`);
+  const dataURL = croppedCanvas
+    .toDataURL('image/png')
+    .replace(/^data:image\/png;base64,/, '');
+  const fileName = path.join(
+    folderPath,
+    `${uuidRadio.checked ? uuid() : currentSources.length}.png`
+  );
   fs.writeFile(fileName, dataURL, 'base64', (err) => {
     if (err) console.error(err);
     if (e.shiftKey) {
@@ -210,11 +228,16 @@ saveBtn.addEventListener('click', async (e) => {
   });
 });
 
-const crop = (canvas: CanvasImageSource, { x, y, width, height }: CroppedPosition) => {
+const crop = (
+  canvas: CanvasImageSource,
+  { x, y, width, height }: CroppedPosition
+) => {
   const newCanvas = document.createElement('canvas');
   newCanvas.width = width;
   newCanvas.height = height;
-  newCanvas.getContext('2d').drawImage(canvas, x, y, width, height, 0, 0, width, height);
+  newCanvas
+    .getContext('2d')
+    .drawImage(canvas, x, y, width, height, 0, 0, width, height);
   return newCanvas;
 };
 
@@ -244,6 +267,7 @@ async function setSources(path: string, sources: string[]): Promise<void> {
 
 function showImg() {
   document.querySelector('.result').classList.remove('hidden');
+  previousBtn.disabled = true;
   nextBtn.disabled = true;
   saveBtn.disabled = true;
 
@@ -257,7 +281,9 @@ function showImg() {
   };
 
   image.onload = () => {
-    const maxWidth = document.querySelector('.canvas').getBoundingClientRect().width;
+    const maxWidth = document
+      .querySelector('.canvas')
+      .getBoundingClientRect().width;
     const aspectRatio = maxWidth / image.width;
 
     const imageWidth = image.width * aspectRatio;
@@ -275,9 +301,12 @@ function showImg() {
 
     saveBtn.disabled = false;
     nextBtn.disabled = index === images.length - 1;
+    previousBtn.disabled = index === 0;
   };
 
-  document.querySelector('.index').textContent = `${index + 1} / ${images.length}`;
+  document.querySelector('.index').textContent = `${index + 1} / ${
+    images.length
+  }`;
 }
 
 function doesPathExist(path: string) {
