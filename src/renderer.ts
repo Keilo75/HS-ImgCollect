@@ -1,4 +1,4 @@
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, JumpListCategory } from 'electron';
 import fs from 'fs';
 import './index.css';
 import path from 'path';
@@ -10,6 +10,7 @@ let index = 0;
 let folderPath: string;
 
 const canvas = document.querySelector<HTMLCanvasElement>('#canvas');
+let canvasRect: DOMRect;
 const ctx = canvas.getContext('2d');
 const cropCanvas = document.querySelector<HTMLCanvasElement>('#cropCanvas');
 const cropCtx = cropCanvas.getContext('2d');
@@ -55,6 +56,7 @@ canvas.addEventListener('mousedown', (e) => {
   isDrawing = true;
   x = e.offsetX;
   y = e.offsetY;
+  canvasRect = canvas.getBoundingClientRect();
 
   if (toolRadio.checked) {
     ctx.strokeStyle = 'white';
@@ -69,8 +71,10 @@ document.addEventListener('mousemove', (e) => {
   if (!isDrawing) return;
 
   if (toolRadio.checked) {
-    x = e.offsetX;
-    y = e.offsetY;
+    x = e.clientX - canvasRect.left;
+    y = e.clientY - canvasRect.top;
+
+    console.log({ x, y, canvasRect, clientX: e.clientX, clientY: e.clientY });
 
     ctx.lineTo(x, y);
     ctx.stroke();
