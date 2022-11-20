@@ -74,8 +74,6 @@ document.addEventListener("mousemove", (e) => {
     x = e.clientX - canvasRect.left;
     y = e.clientY - canvasRect.top;
 
-    console.log({ x, y, canvasRect, clientX: e.clientX, clientY: e.clientY });
-
     ctx.lineTo(x, y);
     ctx.stroke();
   } else {

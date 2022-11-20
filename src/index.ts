@@ -129,6 +129,7 @@ ipcMain.handle("get-response", async (event, args: CrawlOptions) => {
               if (linkURL.host.startsWith("www.google")) return undefined;
             }
 
+            link.target = null;
             link.click();
 
             try {
