@@ -1,14 +1,14 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
-import pie from 'puppeteer-in-electron';
-import puppeteer from 'puppeteer-core';
-import { CrawlOptions, Image } from './types';
+import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import pie from "puppeteer-in-electron";
+import puppeteer from "puppeteer-core";
+import { CrawlOptions, Image } from "./models";
 
-declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
+declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 
 pie.initialize(app);
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
+if (require("electron-squirrel-startup")) {
   // eslint-disable-line global-require
   app.quit();
 }
@@ -28,26 +28,26 @@ const createWindow = (): void => {
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 };
 
-app.on('ready', createWindow);
+app.on("ready", createWindow);
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
-app.on('activate', () => {
+app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
 });
 
-ipcMain.handle('get-response', async (event, args: CrawlOptions) => {
+ipcMain.handle("get-response", async (event, args: CrawlOptions) => {
   const browser = await pie.connect(app, puppeteer);
   const pipWindow = new BrowserWindow();
   pipWindow.maximize();
 
-  if (args.engine === 'google') {
+  if (args.engine === "google") {
     const url = `https://www.google.de/search?q=${args.searchTerm}&tbm=isch`;
     await pipWindow.loadURL(url);
     pipWindow.webContents.openDevTools();
@@ -62,11 +62,14 @@ ipcMain.handle('get-response', async (event, args: CrawlOptions) => {
     };
 
     try {
-      const modal = await page.$('[aria-modal=true]');
+      const modal = await page.$("[aria-modal=true]");
+
       if (modal) {
         await page.mouse.click(coords.acceptCookies.x, coords.acceptCookies.y);
       }
-    } catch {}
+    } catch {
+      // Do Nothing
+    }
 
     const images: Image[] = await page.evaluate(
       (args) => {
@@ -86,10 +89,12 @@ ipcMain.handle('get-response', async (event, args: CrawlOptions) => {
 
         function scrollToBottom(): Promise<void> {
           return new Promise((resolve) => {
-            const endElement = document.querySelector('input[type=button]');
+            const endElement = document.querySelector("input[type=button]");
             const interval = setInterval(() => {
               window.scrollTo(0, 1000000);
-              const isVisible = !isRectEmpty(endElement.getBoundingClientRect());
+              const isVisible = !isRectEmpty(
+                endElement.getBoundingClientRect()
+              );
               if (isVisible) {
                 clearInterval(interval);
                 resolve();
@@ -102,11 +107,11 @@ ipcMain.handle('get-response', async (event, args: CrawlOptions) => {
           console.log(Date.now() - ms);
 
           const selectors = {
-            img: '.islrc',
+            img: ".islrc",
           };
 
           const imgWrap = document.querySelector<HTMLDivElement>(selectors.img);
-          let imageArray = Array.from(imgWrap.querySelectorAll('img'));
+          let imageArray = Array.from(imgWrap.querySelectorAll("img"));
           if (args.offset > 0) imageArray.splice(0, args.offset);
           if (args.limit > 0) imageArray = imageArray.slice(0, args.limit);
 
@@ -114,14 +119,14 @@ ipcMain.handle('get-response', async (event, args: CrawlOptions) => {
             const parent = img.parentElement.parentElement as HTMLElement;
             const nextElement = parent.nextElementSibling as HTMLAnchorElement;
 
-            if (parent.nodeName !== 'A') return undefined;
+            if (parent.nodeName !== "A") return undefined;
             if (!parent) return undefined;
 
             const link = parent as HTMLAnchorElement;
 
             if (link.href.length > 0) {
               const linkURL = new URL(link.href);
-              if (linkURL.host.startsWith('www.google')) return undefined;
+              if (linkURL.host.startsWith("www.google")) return undefined;
             }
 
             link.click();
@@ -129,8 +134,8 @@ ipcMain.handle('get-response', async (event, args: CrawlOptions) => {
             try {
               const imgUrl = new URL(link.href);
               const params = new URLSearchParams(imgUrl.search);
-              const urlParam = params.get('imgurl');
-              return { url: nextElement.getAttribute('href'), img: urlParam };
+              const urlParam = params.get("imgurl");
+              return { url: nextElement.getAttribute("href"), img: urlParam };
             } catch {
               return undefined;
             }
@@ -144,18 +149,22 @@ ipcMain.handle('get-response', async (event, args: CrawlOptions) => {
 
     pipWindow.destroy();
     return images.filter((img) => !!img);
-  } else if (args.engine === 'bing') {
+  } else if (args.engine === "bing") {
     const url = `https://www.bing.com/images/search?q=${args.searchTerm}&form=HDRSC2&first=1&tsc=ImageBasicHover`;
-    await pipWindow.loadURL(url).catch(() => {});
+    await pipWindow.loadURL(url).catch(() => {
+      // Do Nothing
+    });
     pipWindow.webContents.openDevTools();
 
     const page = await pie.getPage(browser, pipWindow);
 
     await sleep(3000);
     try {
-      await page.waitForSelector('[aria-modal=true]');
-      page.keyboard.press('Enter');
-    } catch {}
+      await page.waitForSelector("[aria-modal=true]");
+      page.keyboard.press("Enter");
+    } catch {
+      // Do Nothing
+    }
 
     const images: Image[] = await page.evaluate(
       (args) => {
@@ -173,15 +182,16 @@ ipcMain.handle('get-response', async (event, args: CrawlOptions) => {
           clearInterval(interval);
           console.log(Date.now() - ms);
 
-          let imageElements = Array.from(document.querySelectorAll('.mimg'));
+          let imageElements = Array.from(document.querySelectorAll(".mimg"));
 
           if (args.offset > 0) imageElements.splice(0, args.offset);
-          if (args.limit > 0) imageElements = imageElements.slice(0, args.limit);
+          if (args.limit > 0)
+            imageElements = imageElements.slice(0, args.limit);
 
           const images = imageElements.map((elem) => {
             const parent = elem.parentElement.parentElement;
 
-            const data = JSON.parse(parent.getAttribute('m'));
+            const data = JSON.parse(parent.getAttribute("m"));
             return { url: data.purl, img: data.murl };
           });
 
@@ -200,11 +210,13 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-ipcMain.handle('open-dialog', async (event, args) => {
-  const response = await dialog.showOpenDialog({ properties: ['openDirectory'] });
+ipcMain.handle("open-dialog", async () => {
+  const response = await dialog.showOpenDialog({
+    properties: ["openDirectory"],
+  });
   return response;
 });
 
-ipcMain.handle('is-packaged', (event, args) => {
+ipcMain.handle("is-packaged", () => {
   return app.isPackaged;
 });

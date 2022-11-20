@@ -7,5 +7,5 @@ export interface CrawlOptions {
   searchTerm: string;
   limit?: number;
   offset?: number;
-  engine: 'bing' | 'google';
+  engine: "bing" | "google";
 }
